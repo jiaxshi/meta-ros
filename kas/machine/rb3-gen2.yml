@@ -1,0 +1,82 @@
+header:
+  version: 14
+
+defaults:
+  repos:
+    branch: kirkstone
+
+machine: "qcm6490"
+distro: qcom-wayland
+target: qcom-robotics-ros-image
+
+repos:
+  meta-qcom:
+    url: "https://git.yoctoproject.org/meta-qcom"
+    commit: "083e0f8d7f0528bdc5c3a9fa4133c7a0f101bd91"
+    path: "layers/meta-qcom"
+  meta-qcom-hwe:
+    url: "https://github.com/quic-yocto/meta-qcom-hwe"
+    commit: "f93202d53741d87178a43145fb06b5042c06a32a"
+    path: "layers/meta-qcom-hwe"
+  meta-qcom-distro:
+    url: "https://github.com/quic-yocto/meta-qcom-distro"
+    commit: "86518a9daab828544129c06c81766b52f01ede7a"
+    path: "layers/meta-qcom-distro"
+  meta-qcom-robotics-distro:
+    url: "https://github.com/jiaxshi/meta-qcom-robotics-distro.git"
+    commit: "e171704dbbc36ab94f949505e6200c2e7b0ed18b"
+    path: "layers/meta-qcom-robotics-distro"
+
+  meta-virtualization:
+    url: "https://git.yoctoproject.org/meta-virtualization"
+    commit: "88327090d26955a678c6f8bd2585aad4d802f6c4"
+    path: "layers/meta-virtualization"
+  meta-selinux:
+    url: "https://git.yoctoproject.org/meta-selinux"
+    commit: "a401f4b2816a0b41ce8d9351542658c721935bcd"
+    path: "layers/meta-selinux"
+  meta-security:
+    url: "https://git.yoctoproject.org/meta-security"
+    commit: "06c240c3c235fa06fe724e278d53463ac67cc26b"
+    path: "layers/meta-security"
+  meta-rust:
+    url: "https://github.com/meta-rust/meta-rust"
+    commit: "9611b42d73c7546c3d845da380943a0a4f4205f0"
+    path: "layers/meta-rust"
+    branch: master
+
+local_conf_header:
+  rb3-gen2: |
+    # Set DISTRO_FEATURES
+    DISTRO_FEATURES:append = " seccomp"
+    DISTRO_FEATURES:remove = " usrmerge"
+
+    DL_DIR ?= "${TOPDIR}/downloads"
+    SSTATE_DIR ?= "${TOPDIR}/sstate-cache"
+    BDIR = "${TOPDIR}/build-$MACHINE-$DISTRO"
+
+    # Capture the count of cpu cores available from the host.
+    CPU_COUNT = "${@oe.utils.cpu_count(at_least=2)}"
+    # Number of parallel threads make can run based on cpu cores with a max cap at 20.
+    THREAD_COUNT = "${@oe.utils.cpu_count(at_least=2, at_most=20)}"
+    # Determines how many tasks bitbake should run in parallel.
+    BB_NUMBER_THREADS ?= "${CPU_COUNT}"
+    # Determines how many tasks bitbake should run in parallel during parsing.
+    BB_NUMBER_PARSE_THREADS ?= "${CPU_COUNT}"
+    # Specifies a maximum CPU pressure threshold for bitbake scheduler to start new tasks.
+    BB_PRESSURE_MAX_CPU = "900000"
+
+    # Specifies a maximum IO pressure threshold for bitbake scheduler to start new tasks.
+    BB_PRESSURE_MAX_IO = "900000"
+
+    # Specifies a maximum Memory pressure threshold for bitbake scheduler to start new tasks.
+    BB_PRESSURE_MAX_MEMORY = "900000"
+
+    # Determines how many processes make should run in parallel when running compile tasks.
+    PARALLEL_MAKE ?= "-j ${THREAD_COUNT} -l ${THREAD_COUNT}"
+
+    # Regex for MIRRORS
+    MIRRORS:prepend = "git://.*/.*/ git://git.codelinaro.org/clo/yocto-mirrors/ "
+    MIRRORS:prepend = "https://.*/.*/ https://codelinaro.jfrog.io/artifactory/codelinaro-le/ "
+
+#bblayers_conf_header:

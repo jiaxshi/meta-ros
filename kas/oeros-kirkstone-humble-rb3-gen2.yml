@@ -1,0 +1,7 @@
+header:
+  version: 14
+  includes:
+    - yocto/kirkstone.yml
+    - ros2/humble.yml
+    - common.yml
+    - machine/rb3-gen2.yml
